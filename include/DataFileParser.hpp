@@ -8,19 +8,28 @@ namespace PlotMaker{
   
   class DataFileParser{
     
+    bool fastMode;
     std::regex separator;//to tokenize each line
     
+    template <class T>
+    Data<T> parseFast(const boost::filesystem::path& targetPath, bool verbose) const;//do not use the regex separator and assume a space separator
+    template <class T>
+    Point<T> parseLine(const std::string& line) const;
+    template <class T>
+    Data<T> parseWithRegex(const boost::filesystem::path& targetPath, bool verbose) const;
+    
   public:
+    DataFileParser();
     DataFileParser(std::regex separator);
+    void setFastMode(bool fastMode);
+    void setSeparator(std::regex separator);
     template <class T>
-    Point<T> parseLine(const std::string& line);
-    template <class T>
-    Data<T> parse(const boost::filesystem::path& targetPath, bool verbose);
+    Data<T> parse(const boost::filesystem::path& targetPath, bool verbose) const;
     
   };
   
   template <class T>
-  Point<T> DataFileParser::parseLine(const std::string& line){
+  Point<T> DataFileParser::parseLine(const std::string& line) const{
     
     Point<T> point;
     
@@ -42,7 +51,7 @@ namespace PlotMaker{
   }
   
   template <class T>
-  Data<T> DataFileParser::parse(const boost::filesystem::path& targetPath, bool verbose){
+  Data<T> DataFileParser::parseWithRegex(const boost::filesystem::path& targetPath, bool verbose) const{
 
     std::fstream dataFile(targetPath.string());
     
@@ -67,6 +76,32 @@ namespace PlotMaker{
     }
     
     return data;
+    
+  }
+  
+  template <class T>
+  Data<T> DataFileParser::parseFast(const boost::filesystem::path& targetPath, bool verbose) const{
+
+    std::fstream dataFile(targetPath.string());
+    
+    Data<T> data;
+    Point<T> point;
+    while(dataFile >> point.xValue >> point.yValue >> point.yError){
+      
+      if(verbose) std::cout<<point<<"\n";
+      data.emplace(std::move(point));
+      
+    }
+    
+    return data;
+    
+  }
+  
+  template <class T>
+  Data<T> DataFileParser::parse(const boost::filesystem::path& targetPath, bool verbose) const{
+
+   if(fastMode) return parseFast<T>(targetPath, verbose);
+   else return parseWithRegex<T>(targetPath, verbose);
     
   }
   

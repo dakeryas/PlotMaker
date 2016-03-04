@@ -15,6 +15,7 @@ int main(int argc, char* argv[]){
   ("target", bpo::value<boost::filesystem::path>(&targetPath)->required(), "Text file containing the data to plot")
   ("output,o", bpo::value<boost::filesystem::path>(&outputPath)->required(), "Output file where to save the plot")
   ("separator,s", bpo::value<std::string>(&separatorString)->default_value("\\s+(\\+/-\\s*)?"), "Regular expression separator for columns")
+  ("fast,f", "Assumes 3 columns, space sperator only, no safety checks") 
   ("verbose,v", "Display read data");  
   bpo::positional_options_description positionalOptions;//to use arguments without "--"
   positionalOptions.add("target", 1);
@@ -50,6 +51,7 @@ int main(int argc, char* argv[]){
   else{
     
     PlotMaker::DataFileParser dataFileParser{std::regex(separatorString)};
+    if(arguments.count("fast")) dataFileParser.setFastMode(true);
     auto data = dataFileParser.parse<double>(targetPath, arguments.count("verbose"));
     data.write(outputPath);
     
