@@ -1,5 +1,5 @@
-#ifndef PLOTTER_DATA_H
-#define PLOTTER_DATA_H
+#ifndef PLOT_MAKER_DATA_H
+#define PLOT_MAKER_DATA_H
 
 #include "boost/filesystem.hpp"
 #include "TGraphErrors.h"

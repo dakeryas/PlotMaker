@@ -1,5 +1,5 @@
-#ifndef PLOTTER_POINT_H
-#define PLOTTER_POINT_H
+#ifndef PLOT_MAKER_POINT_H
+#define PLOT_MAKER_POINT_H
 
 #include <iomanip>
 #include <iostream>
