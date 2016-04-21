@@ -12,11 +12,11 @@ namespace PlotMaker{
     std::regex separator;//to tokenize each line
     
     template <class T>
-    Data<T> parseFast(const boost::filesystem::path& targetPath, bool verbose) const;//do not use the regex separator and assume a space separator
+    Data<T> parseFast(std::istream& dataStream, bool verbose) const;//do not use the regex separator and assume a space separator
     template <class T>
     Point<T> parseLine(const std::string& line) const;
     template <class T>
-    Data<T> parseWithRegex(const boost::filesystem::path& targetPath, bool verbose) const;
+    Data<T> parseWithRegex(std::istream& dataStream, bool verbose) const;
     
   public:
     DataFileParser();
@@ -24,7 +24,7 @@ namespace PlotMaker{
     void setFastMode(bool fastMode);
     void setSeparator(std::regex separator);
     template <class T>
-    Data<T> parse(const boost::filesystem::path& targetPath, bool verbose) const;
+    Data<T> parse(std::istream& dataStream, bool verbose) const;
     
   };
   
@@ -51,13 +51,11 @@ namespace PlotMaker{
   }
   
   template <class T>
-  Data<T> DataFileParser::parseWithRegex(const boost::filesystem::path& targetPath, bool verbose) const{
+  Data<T> DataFileParser::parseWithRegex(std::istream& dataStream, bool verbose) const{
 
-    std::fstream dataFile(targetPath.string());
-    
     Data<T> data;
     std::string line;
-    while(std::getline(dataFile, line)){
+    while(std::getline(dataStream, line)){
       
       try{
 	
@@ -80,13 +78,11 @@ namespace PlotMaker{
   }
   
   template <class T>
-  Data<T> DataFileParser::parseFast(const boost::filesystem::path& targetPath, bool verbose) const{
+  Data<T> DataFileParser::parseFast(std::istream& dataStream, bool verbose) const{
 
-    std::fstream dataFile(targetPath.string());
-    
     Data<T> data;
     Point<T> point;
-    while(dataFile >> point.xValue >> point.yValue >> point.yError){
+    while(dataStream >> point.xValue >> point.yValue >> point.yError){
       
       if(verbose) std::cout<<point<<"\n";
       data.emplace(std::move(point));
@@ -98,10 +94,10 @@ namespace PlotMaker{
   }
   
   template <class T>
-  Data<T> DataFileParser::parse(const boost::filesystem::path& targetPath, bool verbose) const{
+  Data<T> DataFileParser::parse(std::istream& dataStream, bool verbose) const{
 
-   if(fastMode) return parseFast<T>(targetPath, verbose);
-   else return parseWithRegex<T>(targetPath, verbose);
+   if(fastMode) return parseFast<T>(dataStream, verbose);
+   else return parseWithRegex<T>(dataStream, verbose);
     
   }
   

@@ -12,7 +12,7 @@ int main(int argc, char* argv[]){
   bpo::options_description optionDescription("PlotMaker usage");
   optionDescription.add_options()
   ("help,h", "Display this help message")
-  ("target", bpo::value<boost::filesystem::path>(&targetPath)->required(), "Text file containing the data to plot")
+  ("target", bpo::value<boost::filesystem::path>(&targetPath), "Text file containing the data to plot")
   ("output,o", bpo::value<boost::filesystem::path>(&outputPath)->required(), "Output file where to save the plot")
   ("separator,s", bpo::value<std::string>(&separatorString)->default_value("\\s+(\\+/-\\s*)?"), "Regular expression separator for columns")
   ("fast,f", "Assumes 3 columns, space sperator only, no safety checks") 
@@ -42,20 +42,26 @@ int main(int argc, char* argv[]){
     
   }
   
-  if(!boost::filesystem::is_regular_file(targetPath)){
+  std::istream* dataStream = &std::cin;
+  
+  if(arguments.count("target")){
     
-    std::cerr<<"Error: "<<targetPath<<" is not a regular file"<<std::endl;
-    return 1;
+    if(!boost::filesystem::is_regular_file(targetPath)){
+      
+      std::cerr<<"Error: "<<targetPath<<" is not a regular file"<<std::endl;
+      return 1;
+      
+    }
+    else dataStream = new std::ifstream(targetPath.string());
     
   }
-  else{
-    
-    PlotMaker::DataFileParser dataFileParser{std::regex(separatorString)};
-    if(arguments.count("fast")) dataFileParser.setFastMode(true);
-    auto data = dataFileParser.parse<double>(targetPath, arguments.count("verbose"));
-    data.write(outputPath);
-    
-  }
+  
+  PlotMaker::DataFileParser dataFileParser{std::regex(separatorString)};
+  if(arguments.count("fast")) dataFileParser.setFastMode(true);
+  auto data = dataFileParser.parse<double>(*dataStream, arguments.count("verbose"));
+  data.write(outputPath);
+  
+  if(dataStream != &std::cin) delete dataStream;
   
 }
 
